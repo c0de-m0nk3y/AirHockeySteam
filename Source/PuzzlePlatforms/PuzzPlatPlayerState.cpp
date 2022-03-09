@@ -7,6 +7,14 @@ void APuzzPlatPlayerState::GetLifetimeReplicatedProps(TArray< FLifetimeProperty 
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-    //DOREPLIFETIME(APuzzPlatPlayerState, CurrentTeam); //WHY DOES THIS GIVE ERROR?
+    DOREPLIFETIME(APuzzPlatPlayerState, CurrentTeam); //WHY DOES THIS GIVE ERROR?
 }
 
+void APuzzPlatPlayerState::CopyProperties(APlayerState* PlayerState)
+{
+    Super::CopyProperties(PlayerState);
+
+    UE_LOG(LogTemp, Warning, TEXT("Copying Properties YEAHBOIIIII"));
+    APuzzPlatPlayerState* pState=Cast<APuzzPlatPlayerState>(PlayerState);
+    pState->CurrentTeam=CurrentTeam;
+}

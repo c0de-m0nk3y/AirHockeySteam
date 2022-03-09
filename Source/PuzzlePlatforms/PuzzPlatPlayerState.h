@@ -20,4 +20,8 @@ public:
 
 	UPROPERTY(replicated)
 		int CurrentTeam = 111;
+
+protected:
+	void GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const override;
+	virtual void CopyProperties(APlayerState* PlayerState) override;
 };
