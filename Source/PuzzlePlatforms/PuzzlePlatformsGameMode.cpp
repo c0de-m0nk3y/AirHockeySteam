@@ -3,8 +3,9 @@
 #include "PuzzlePlatformsGameMode.h"
 #include "PuzzlePlatformsCharacter.h"
 #include "UObject/ConstructorHelpers.h"
-#include "PuzzPlatPlayerController.h"
 #include "PuzzlePlatformsGameInstance.h"
+#include "PuzzPlatPlayerState.h"
+
 
 
 APuzzlePlatformsGameMode::APuzzlePlatformsGameMode()
@@ -18,7 +19,8 @@ APuzzlePlatformsGameMode::APuzzlePlatformsGameMode()
 		DefaultPawnClass = PlayerPawnBPClass.Class;
 	}
 
-	PlayerControllerClass=APuzzPlatPlayerController::StaticClass();
+	PlayerStateClass=APuzzPlatPlayerState::StaticClass();
+	/*PlayerControllerClass=APuzzPlatPlayerController::StaticClass();*/
 }
 
 void APuzzlePlatformsGameMode::PostLogin(APlayerController* NewPlayer)
@@ -27,10 +29,11 @@ void APuzzlePlatformsGameMode::PostLogin(APlayerController* NewPlayer)
 	UE_LOG(LogTemp, Warning, TEXT("GMode: Game mode POSTLOGIN called"));
 
 	int team=(2-++NumberOfPlayers)%2;
-	APuzzPlatPlayerController* pCont=(APuzzPlatPlayerController*)NewPlayer;
-	if(pCont!=nullptr)
+	APuzzPlatPlayerState* pState=NewPlayer->GetPlayerState<APuzzPlatPlayerState>();
+
+	if(pState!=nullptr)
 	{
-		pCont->Team=5;
+		pState->CurrentTeam=5;
 	}
 
 

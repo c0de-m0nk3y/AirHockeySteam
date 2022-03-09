@@ -13,8 +13,8 @@
 
 #include "Net/UnrealNetwork.h"
 #include "GameFramework/GameStateBase.h"
-#include "GameFramework/PlayerState.h"
-#include "PuzzPlatPlayerController.h"
+#include "PuzzPlatPlayerState.h"
+
 
 
 
@@ -74,18 +74,14 @@ void APlayerMallet::Tick(float DeltaTime)
 	if(GetWorld()==nullptr)
 		return;
 	
-	APuzzPlatPlayerController* pCont = (APuzzPlatPlayerController*)GetWorld()->GetFirstPlayerController();
-	if(pCont!=nullptr)
+	APuzzPlatPlayerState* pState=GetWorld()->GetFirstPlayerController()->GetPlayerState<APuzzPlatPlayerState>();
+	if(pState!=nullptr)
 	{
-		int team=pCont->Team;
+		int team=pState->CurrentTeam;
 		UE_LOG(LogTemp, Warning, TEXT("pCont (1st PCont) Team=%d"), team);
 	}
-	APuzzPlatPlayerController* pContLocal=(APuzzPlatPlayerController*)GetWorld()->GetFirstLocalPlayerFromController();
-	if(pContLocal!=nullptr)
-	{
-		int teamlocal=pContLocal->Team;
-		UE_LOG(LogTemp, Warning, TEXT("pCont (1st Local PCont) Team=%d"), teamlocal);
-	}
+
+
 }
 
 
