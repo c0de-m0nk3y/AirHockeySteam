@@ -18,5 +18,5 @@ public:
 
 
 	UPROPERTY(replicated)
-		int Team =69;
+		int Team = 111;
 };
