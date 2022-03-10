@@ -64,7 +64,11 @@ APlayerMallet::APlayerMallet()
 void APlayerMallet::BeginPlay()
 {
 	Super::BeginPlay();
+
+	UE_LOG(LogTemp, Warning, TEXT("MALLET: begin play"));
+
 	
+
 }
 
 void APlayerMallet::Tick(float DeltaTime)
@@ -73,15 +77,35 @@ void APlayerMallet::Tick(float DeltaTime)
 
 	if(GetWorld()==nullptr)
 		return;
-	
-	APuzzPlatPlayerState* pState=GetWorld()->GetFirstPlayerController()->GetPlayerState<APuzzPlatPlayerState>();
-	if(pState!=nullptr)
+
+	AGameStateBase* gamestate=GetWorld()->GetGameState();
+	if(gamestate!=nullptr)
 	{
-		int team=pState->CurrentTeam;
-		UE_LOG(LogTemp, Warning, TEXT("pCont (1st PCont) Team=%d"), team);
+
+		for(int i=0; i<gamestate->PlayerArray.Num(); i++)
+		{
+			APuzzPlatPlayerState* pState=Cast<APuzzPlatPlayerState>(gamestate->PlayerArray[i]);
+			if(pState!=nullptr)
+			{
+				APlayerMallet* mallet=Cast<APlayerMallet>(pState->GetPawn());
+				if(mallet==nullptr) return;
+				if(mallet->StaticMesh==nullptr) return;
+				int team_value=pState->CurrentTeam;
+				UE_LOG(LogTemp, Warning, TEXT("playerarray index: %d ....team: %d"),i, pState->CurrentTeam);
+				switch(team_value)
+				{
+					case 0:
+						mallet->StaticMesh->SetMaterial(0, BlueTeamMaterial);
+						break;
+					case 1:
+						mallet->StaticMesh->SetMaterial(0, RedTeamMaterial);
+						break;
+					default:
+						UE_LOG(LogTemp, Warning, TEXT("Team is invalid when setting colours"));
+				}
+			}
+		}
 	}
-
-
 }
 
 

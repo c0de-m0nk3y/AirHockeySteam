@@ -20,7 +20,7 @@ APuzzlePlatformsGameMode::APuzzlePlatformsGameMode()
 	}
 
 	PlayerStateClass=APuzzPlatPlayerState::StaticClass();
-	/*PlayerControllerClass=APuzzPlatPlayerController::StaticClass();*/
+
 }
 
 void APuzzlePlatformsGameMode::PostLogin(APlayerController* NewPlayer)
@@ -33,7 +33,7 @@ void APuzzlePlatformsGameMode::PostLogin(APlayerController* NewPlayer)
 
 	if(pState!=nullptr)
 	{
-		pState->CurrentTeam=5;
+		pState->CurrentTeam=(2-NumberOfPlayers)%2;
 	}
 
 
