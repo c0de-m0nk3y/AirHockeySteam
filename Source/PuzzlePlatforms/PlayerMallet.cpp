@@ -15,7 +15,8 @@
 #include "GameFramework/GameStateBase.h"
 #include "PuzzPlatPlayerState.h"
 
-
+#include "SpawnPoint.h"
+#include "Kismet/GameplayStatics.h"
 
 
 
@@ -67,16 +68,41 @@ void APlayerMallet::BeginPlay()
 
 	UE_LOG(LogTemp, Warning, TEXT("MALLET: begin play"));
 
+	if(GetWorld()==nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("World is NULL!"));
+		return;
+	}
+
+	GetWorldTimerManager().SetTimer(MalletInitDelayTimer, this, &APlayerMallet::DelayedBeginPlay, 0.50f);
+
 	
 
 }
 
-void APlayerMallet::Tick(float DeltaTime)
+void APlayerMallet::DelayedBeginPlay()
 {
-	Super::Tick(DeltaTime);
+	InitMallet();
+}
 
-	if(GetWorld()==nullptr)
-		return;
+void APlayerMallet::InitMallet()
+{
+	GetCharacterMovement()->Velocity=FVector::ZeroVector;
+
+	TArray<AActor*> spawnPoints;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ASpawnPoint::StaticClass(), spawnPoints);
+	
+
+	TArray<ASpawnPoint*> spawnPoints_Sorted;
+	for(int i=0; i<spawnPoints.Num(); i++)
+	{
+		for(AActor* actor:spawnPoints)
+		{
+			ASpawnPoint* sp=Cast<ASpawnPoint>(actor);
+			if(sp->Team==i)
+				spawnPoints_Sorted.Add(sp);
+		}
+	}
 
 	AGameStateBase* gamestate=GetWorld()->GetGameState();
 	if(gamestate!=nullptr)
@@ -91,21 +117,36 @@ void APlayerMallet::Tick(float DeltaTime)
 				if(mallet==nullptr) return;
 				if(mallet->StaticMesh==nullptr) return;
 				int team_value=pState->CurrentTeam;
-				UE_LOG(LogTemp, Warning, TEXT("playerarray index: %d ....team: %d"),i, pState->CurrentTeam);
+				
 				switch(team_value)
 				{
 					case 0:
-						mallet->StaticMesh->SetMaterial(0, BlueTeamMaterial);
+						mallet->StaticMesh->SetMaterial(0, RedTeamMaterial);
 						break;
 					case 1:
-						mallet->StaticMesh->SetMaterial(0, RedTeamMaterial);
+						mallet->StaticMesh->SetMaterial(0, BlueTeamMaterial);
 						break;
 					default:
 						UE_LOG(LogTemp, Warning, TEXT("Team is invalid when setting colours"));
 				}
+
+				if(GetWorld()->IsServer())
+				{
+					if(spawnPoints_Sorted.Num()!=0) mallet->SetActorLocation(spawnPoints_Sorted[team_value]->GetActorLocation());
+				}
+					
 			}
 		}
 	}
+}
+
+
+
+void APlayerMallet::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	
 }
 
 
@@ -194,4 +235,6 @@ void APlayerMallet::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	// VR headset functionality
 	PlayerInputComponent->BindAction("ResetVR", IE_Pressed, this, &APlayerMallet::OnResetVR);
 }
+
+
 

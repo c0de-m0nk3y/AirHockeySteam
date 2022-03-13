@@ -43,6 +43,8 @@ public:
 
 	UPROPERTY(EditDefaultsOnly)
 		UMaterialInterface* BlueTeamMaterial;
+
+	void InitMallet();
 	
 protected:
 
@@ -90,5 +92,10 @@ public:
 		return FollowCamera;
 	}
 
+private:
+	FTimerHandle MalletInitDelayTimer;
 
+	void DelayedBeginPlay();
+
+	
 };

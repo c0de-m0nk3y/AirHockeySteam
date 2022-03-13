@@ -29,13 +29,14 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	TSubclassOf<class AActor> PuckBPClass;
-	class APuck* Puck;
+	class APuck* Puck = nullptr;
 
 	void SpawnPuck();
+	void GoalScored(int Team);
 
-	bool PuckIsLive=false;
-	bool TeamSetupComplete=false;
+private:
+	FTimerHandle PuckSpawnTimer;
+	TArray<int> score;
 
-	float TimeSinceWorldSpawned=0.f;
-
+	TArray<class AActor*> Sounds;
 };

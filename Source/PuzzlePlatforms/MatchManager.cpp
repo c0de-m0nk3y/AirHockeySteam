@@ -5,8 +5,12 @@
 
 #include "UObject/ConstructorHelpers.h"
 #include "Puck.h"
-
+#include "GameFramework/GameStateBase.h"
 #include "Net/UnrealNetwork.h"
+#include "PlayerMallet.h"
+#include "GameFramework/PlayerState.h"
+#include "Sound/AmbientSound.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 AMatchManager::AMatchManager()
@@ -18,21 +22,22 @@ AMatchManager::AMatchManager()
 	ConstructorHelpers::FClassFinder<AActor> PuckBP(TEXT("/Game/BP/BP_Puck"));
 	PuckBPClass=PuckBP.Class;
 
+	score.Init(0, 2);
+
+	
+
 }
 
 // Called when the game starts or when spawned
 void AMatchManager::BeginPlay()
 {
 	Super::BeginPlay();
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AAmbientSound::StaticClass(), Sounds);
+	UE_LOG(LogTemp, Warning, TEXT("Sounds array size=%d"), Sounds.Num());
+
+
+	SpawnPuck();
 	
-	UWorld* world=GetWorld();
-	if(world!=nullptr)
-	{
-		if(world->IsServer())
-		{
-			SpawnPuck();
-		}
-	}
 }
 
 
@@ -51,9 +56,39 @@ void AMatchManager::SpawnPuck()
 	UWorld* world=GetWorld();
 	if(world!=nullptr)
 	{
-		Puck=(APuck*)world->SpawnActor<APuck>(PuckBPClass, PuckSpawnLocation, FRotator::ZeroRotator);
+		if(world->IsServer())
+		{
+			if(Puck!=nullptr) Puck->Destroy();
+			Puck=(APuck*)world->SpawnActor<APuck>(PuckBPClass, PuckSpawnLocation, FRotator::ZeroRotator);
+		}
 	}
+	
+	AGameStateBase* gamestate=world->GetGameState();
+	for(int i=0; i<gamestate->PlayerArray.Num(); i++)
+	{
+		APlayerMallet* mallet = Cast<APlayerMallet>(gamestate->PlayerArray[i]->GetPawn());
+		if(mallet==nullptr)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("MALLET IS NULL"));
+			return;
+		}
+		else
+		{
+			mallet->InitMallet();
+		}
+	}
+	
+}
 
+void AMatchManager::GoalScored(int Team)
+{
+	GetWorldTimerManager().SetTimer(PuckSpawnTimer, this, &AMatchManager::SpawnPuck, 3.0f);
+	int i=score[Team];
+	score[Team]=++i;
+	UE_LOG(LogTemp, Warning, TEXT("SCORE:%d:%d"), score[0], score[1]);
+	
+	AAmbientSound* goalsound=Cast<AAmbientSound>(Sounds[0]);
+	goalsound->Play();
 }
 
 
