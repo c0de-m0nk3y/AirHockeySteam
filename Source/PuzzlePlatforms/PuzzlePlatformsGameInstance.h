@@ -30,7 +30,9 @@ public:
 	void InGameLoadMenu();
 
 	UFUNCTION(Exec)
-	void Host(FString ServerName) override;
+	void Host(FString ServerName, int PlayersPerTeam) override;
+
+	/*int MatchGameMode=0;*/
 
 	UFUNCTION(Exec)
 	void Join(uint32 Index) override;
@@ -40,6 +42,8 @@ public:
 	virtual void LoadMainMenu() override;
 
 	void RefreshServerList() override;
+
+	uint32 NumPlayersPerTeam=1;
 
 private:
 	TSubclassOf<class UUserWidget> MenuClass;
@@ -58,4 +62,6 @@ private:
 
 	FString DesiredServerName;
 	void CreateSession();
+
+	
 };

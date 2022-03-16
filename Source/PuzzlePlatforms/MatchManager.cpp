@@ -89,6 +89,8 @@ void AMatchManager::GoalScored(int Team)
 	
 	AAmbientSound* goalsound=Cast<AAmbientSound>(Sounds[0]);
 	goalsound->Play();
+	AAmbientSound* goalsound_voice=Cast<AAmbientSound>(Sounds[1]);
+	goalsound_voice->Play();
 }
 
 

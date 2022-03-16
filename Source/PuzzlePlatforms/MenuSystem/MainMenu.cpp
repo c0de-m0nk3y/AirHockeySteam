@@ -10,6 +10,7 @@
 #include "Components/TextBlock.h"
 
 #include "ServerRow.h"
+#include "Misc/DateTime.h"
 
 UMainMenu::UMainMenu(const FObjectInitializer & ObjectInitializer)
 {
@@ -25,13 +26,10 @@ bool UMainMenu::Initialize()
 	if (!Success) return false;
 	
 	if (!ensure(HostButton != nullptr)) return false;
-	HostButton->OnClicked.AddDynamic(this, &UMainMenu::OpenHostMenu);
+	HostButton->OnClicked.AddDynamic(this, &UMainMenu::HostServer);
 
-	if (!ensure(CancelHostMenuButton != nullptr)) return false;
-	CancelHostMenuButton->OnClicked.AddDynamic(this, &UMainMenu::OpenMainMenu);
-
-	if (!ensure(ConfirmHostMenuButton != nullptr)) return false;
-	ConfirmHostMenuButton->OnClicked.AddDynamic(this, &UMainMenu::HostServer);
+	if(!ensure(HostButton2v2!=nullptr)) return false;
+	HostButton2v2->OnClicked.AddDynamic(this, &UMainMenu::HostServer_2v2);
 
 	if (!ensure(JoinButton != nullptr)) return false;
 	JoinButton->OnClicked.AddDynamic(this, &UMainMenu::OpenJoinMenu);
@@ -48,23 +46,35 @@ bool UMainMenu::Initialize()
 	return true;
 }
 
-void UMainMenu::OpenHostMenu()
-{
-	MenuSwitcher->SetActiveWidget(HostMenu);
-}
+
+
 
 
 void UMainMenu::HostServer()
 {
+	UE_LOG(LogTemp, Warning, TEXT("MainMenu.cpp:HostServer invoked"));
 	if (MenuInterface != nullptr)
 	{
-		FString ServerName = ServerHostName->Text.ToString();
-		MenuInterface->Host(ServerName);
+		FString ServerName = "1v1_"+FDateTime::UtcNow().ToString();
+		MenuInterface->Host(ServerName, 1);
+		
+	}
+}
+
+void UMainMenu::HostServer_2v2()
+{
+	UE_LOG(LogTemp, Warning, TEXT("MainMenu.cpp:HostServer 2v2 invoked"));
+	if(MenuInterface!=nullptr)
+	{
+		FString ServerName="2v2_"+FDateTime::UtcNow().ToString();
+		MenuInterface->Host(ServerName, 2);
+
 	}
 }
 
 void UMainMenu::SetServerList(TArray<FServerData> ServerNames)
 {
+	UE_LOG(LogTemp, Warning, TEXT("MainMenu.cpp:SetServerlist invoked"));
 	UWorld* World = this->GetWorld();
 	if (!ensure(World != nullptr)) return;
 
@@ -89,12 +99,14 @@ void UMainMenu::SetServerList(TArray<FServerData> ServerNames)
 
 void UMainMenu::SelectIndex(uint32 Index)
 {
+	UE_LOG(LogTemp, Warning, TEXT("MainMenu.cpp:SelectIndex invoked"));
 	SelectedIndex = Index;
 	UpdateChildren();
 }
 
 void UMainMenu::UpdateChildren()
 {
+	UE_LOG(LogTemp, Warning, TEXT("MainMenu.cpp:UpdateChildren invoked"));
 	for (int32 i = 0; i < ServerList->GetChildrenCount(); ++i)
 	{
 		auto Row = Cast<UServerRow>(ServerList->GetChildAt(i));
@@ -107,6 +119,7 @@ void UMainMenu::UpdateChildren()
 
 void UMainMenu::JoinServer()
 {
+	UE_LOG(LogTemp, Warning, TEXT("MainMenu.cpp:JoinServer invoked"));
 	if (SelectedIndex.IsSet() && MenuInterface != nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Selected index %d."), SelectedIndex.GetValue());
@@ -120,6 +133,7 @@ void UMainMenu::JoinServer()
 
 void UMainMenu::OpenJoinMenu()
 {
+	UE_LOG(LogTemp, Warning, TEXT("MainMenu.cpp:OpenJoinMenu invoked"));
 	if (!ensure(MenuSwitcher != nullptr)) return;
 	if (!ensure(JoinMenu != nullptr)) return;
 	MenuSwitcher->SetActiveWidget(JoinMenu);
@@ -130,6 +144,7 @@ void UMainMenu::OpenJoinMenu()
 
 void UMainMenu::OpenMainMenu()
 {
+	UE_LOG(LogTemp, Warning, TEXT("MainMenu.cpp:OpenMainMenu invoked"));
 	if (!ensure(MenuSwitcher != nullptr)) return;
 	if (!ensure(JoinMenu != nullptr)) return;
 	MenuSwitcher->SetActiveWidget(MainMenu);
@@ -137,6 +152,7 @@ void UMainMenu::OpenMainMenu()
 
 void UMainMenu::QuitPressed()
 {
+	UE_LOG(LogTemp, Warning, TEXT("MainMenu.cpp:QuitPressed invoked"));
 	UWorld* World = GetWorld();
 	if (!ensure(World != nullptr)) return;
 

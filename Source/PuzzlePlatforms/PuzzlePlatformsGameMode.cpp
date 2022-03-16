@@ -10,7 +10,7 @@
 
 APuzzlePlatformsGameMode::APuzzlePlatformsGameMode()
 {
-	UE_LOG(LogTemp, Warning, TEXT("GMode: Game mode constructor called"));
+	UE_LOG(LogTemp, Warning, TEXT("GMode:constructor invoked"));
 
 	// set default pawn class to our Blueprinted character
 	static ConstructorHelpers::FClassFinder<APawn> PlayerPawnBPClass(TEXT("/Game/BP/BP_PlayerMallet"));
@@ -26,21 +26,28 @@ APuzzlePlatformsGameMode::APuzzlePlatformsGameMode()
 void APuzzlePlatformsGameMode::PostLogin(APlayerController* NewPlayer)
 {
 	Super::PostLogin(NewPlayer);
-	UE_LOG(LogTemp, Warning, TEXT("GMode: Game mode POSTLOGIN called"));
+	UE_LOG(LogTemp, Warning, TEXT("GMode:POSTLOGIN invoked"));
 
-	int team=(2-++NumberOfPlayers)%2;
+	int team=(NumberOfPlayers++)%2;
 	APuzzPlatPlayerState* pState=NewPlayer->GetPlayerState<APuzzPlatPlayerState>();
+
+	UE_LOG(LogTemp, Warning, TEXT("GMode:NUMPLAYERS=%d"), NumberOfPlayers);
 
 	if(pState!=nullptr)
 	{
-		pState->CurrentTeam=(2-NumberOfPlayers)%2;
+		pState->CurrentTeam=team;
+		UE_LOG(LogTemp, Warning, TEXT("GMode:POSTLOGIN pState-CurrentTeam=%d"), pState->CurrentTeam);
 	}
 
-
-	if(NumberOfPlayers>=2)
+	UPuzzlePlatformsGameInstance* gameinstance=Cast<UPuzzlePlatformsGameInstance>(GetGameInstance());
+	if(gameinstance!=nullptr)
 	{
-		GetWorldTimerManager().SetTimer(GameStartTimer, this, &APuzzlePlatformsGameMode::StartGame, 2);
-	}
+		if(NumberOfPlayers>=gameinstance->NumPlayersPerTeam*2)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("GameInstance.Numplayers=%d"), gameinstance->NumPlayersPerTeam);
+			GetWorldTimerManager().SetTimer(GameStartTimer, this, &APuzzlePlatformsGameMode::StartGame, 5);
+		}
+	}	
 }
 
 void APuzzlePlatformsGameMode::Logout(AController* Exiting)
@@ -51,6 +58,7 @@ void APuzzlePlatformsGameMode::Logout(AController* Exiting)
 
 void APuzzlePlatformsGameMode::StartGame()
 {
+	UE_LOG(LogTemp, Warning, TEXT("GMode:StartGame invoked"));
 	auto GameInstance=Cast<UPuzzlePlatformsGameInstance>(GetGameInstance());
 
 	if(GameInstance==nullptr) return;

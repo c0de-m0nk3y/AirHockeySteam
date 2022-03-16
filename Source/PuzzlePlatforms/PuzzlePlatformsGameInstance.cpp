@@ -16,6 +16,7 @@ const static FName SERVER_NAME_SETTINGS_KEY = TEXT("ServerName");
 
 UPuzzlePlatformsGameInstance::UPuzzlePlatformsGameInstance(const FObjectInitializer & ObjectInitializer)
 {
+	UE_LOG(LogTemp, Warning, TEXT("GInstance:constructor invoked"));
 	ConstructorHelpers::FClassFinder<UUserWidget> MenuBPClass(TEXT("/Game/MenuSystem/WBP_MainMenu"));
 	if (!ensure(MenuBPClass.Class != nullptr)) return;
 
@@ -30,6 +31,8 @@ UPuzzlePlatformsGameInstance::UPuzzlePlatformsGameInstance(const FObjectInitiali
 void UPuzzlePlatformsGameInstance::Init()
 {
 	Super::Init();
+
+	UE_LOG(LogTemp, Warning, TEXT("GInstance:Init invoked"));
 
 	IOnlineSubsystem* Subsystem = IOnlineSubsystem::Get();
 	if (Subsystem != nullptr) {
@@ -54,6 +57,8 @@ void UPuzzlePlatformsGameInstance::Init()
 
 void UPuzzlePlatformsGameInstance::LoadMenuWidget()
 {
+	UE_LOG(LogTemp, Warning, TEXT("GInstance:LoadMenuWidget invoked"));
+
 	if (!ensure(MenuClass != nullptr)) return;
 
 	Menu = CreateWidget<UMainMenu>(this, MenuClass);
@@ -66,19 +71,22 @@ void UPuzzlePlatformsGameInstance::LoadMenuWidget()
 
 void UPuzzlePlatformsGameInstance::InGameLoadMenu()
 {
+	UE_LOG(LogTemp, Warning, TEXT("GInstance:InGameLoadMenu invoked"));
 	if (!ensure(InGameMenuClass != nullptr)) return;
 
-	UMenuWidget* Menu = CreateWidget<UMenuWidget>(this, InGameMenuClass);
-	if (!ensure(Menu != nullptr)) return;
+	UMenuWidget* menu = CreateWidget<UMenuWidget>(this, InGameMenuClass);
+	if (!ensure(menu != nullptr)) return;
 
-	Menu->Setup();
+	menu->Setup();
 
-	Menu->SetMenuInterface(this);
+	menu->SetMenuInterface(this);
 }
 
 
-void UPuzzlePlatformsGameInstance::Host(FString ServerName)
+void UPuzzlePlatformsGameInstance::Host(FString ServerName, int PlayersPerTeam)
 {
+	UE_LOG(LogTemp, Warning, TEXT("GInstance:Host invoked"));
+	NumPlayersPerTeam=PlayersPerTeam;
 	DesiredServerName = ServerName;
 	if (SessionInterface.IsValid())
 	{
@@ -96,6 +104,7 @@ void UPuzzlePlatformsGameInstance::Host(FString ServerName)
 
 void UPuzzlePlatformsGameInstance::OnDestroySessionComplete(FName SessionName, bool Success)
 {
+	UE_LOG(LogTemp, Warning, TEXT("GInstance:OnDestroyComplete invoked"));
 	if (Success) {
 		CreateSession();
 	}
@@ -103,12 +112,14 @@ void UPuzzlePlatformsGameInstance::OnDestroySessionComplete(FName SessionName, b
 
 void UPuzzlePlatformsGameInstance::OnNetworkFailure(UWorld* World, UNetDriver* NetDriver, ENetworkFailure::Type FailureType, const FString& ErrorString)
 {
+	UE_LOG(LogTemp, Warning, TEXT("GInstance:OnNet Failure invoked"));
 	LoadMainMenu();
 }
 
 
 void UPuzzlePlatformsGameInstance::CreateSession()
 {
+	UE_LOG(LogTemp, Warning, TEXT("GInstance:CreateSession invoked"));
 	if (SessionInterface.IsValid()) {
 		FOnlineSessionSettings SessionSettings;
 		if (IOnlineSubsystem::Get()->GetSubsystemName() == "NULL")
@@ -119,7 +130,8 @@ void UPuzzlePlatformsGameInstance::CreateSession()
 		{
 			SessionSettings.bIsLANMatch = false;
 		}
-		SessionSettings.NumPublicConnections = 5;
+		SessionSettings.NumPublicConnections = NumPlayersPerTeam*2;
+		UE_LOG(LogTemp, Warning, TEXT("GInstance:NumConnects=%d"), NumPlayersPerTeam*2);
 		SessionSettings.bShouldAdvertise = true;
 		SessionSettings.bUsesPresence = true;
 		SessionSettings.bUseLobbiesIfAvailable=true;
@@ -131,6 +143,7 @@ void UPuzzlePlatformsGameInstance::CreateSession()
 
 void UPuzzlePlatformsGameInstance::OnCreateSessionComplete(FName SessionName, bool Success)
 {
+	UE_LOG(LogTemp, Warning, TEXT("GInstance:OnCreateSessionComplete invoked"));
 	if (!Success)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Could not create session"));
@@ -155,6 +168,7 @@ void UPuzzlePlatformsGameInstance::OnCreateSessionComplete(FName SessionName, bo
 
 void UPuzzlePlatformsGameInstance::RefreshServerList()
 {
+	UE_LOG(LogTemp, Warning, TEXT("GInstance:RefreshServerList invoked"));
 	SessionSearch = MakeShareable(new FOnlineSessionSearch());
 	if (SessionSearch.IsValid())
 	{
@@ -168,6 +182,7 @@ void UPuzzlePlatformsGameInstance::RefreshServerList()
 
 void UPuzzlePlatformsGameInstance::OnFindSessionsComplete(bool Success)
 {
+	UE_LOG(LogTemp, Warning, TEXT("GInstance:OnFindSessionComplete invoked"));
 	if (Success && SessionSearch.IsValid() && Menu != nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Finished Find Session"));
@@ -198,6 +213,7 @@ void UPuzzlePlatformsGameInstance::OnFindSessionsComplete(bool Success)
 
 void UPuzzlePlatformsGameInstance::Join(uint32 Index)
 {
+	UE_LOG(LogTemp, Warning, TEXT("GInstance:Join invoked"));
 	if (!SessionInterface.IsValid()) return;
 	if (!SessionSearch.IsValid()) return;
 	if (Menu != nullptr) Menu->Teardown();
@@ -207,6 +223,7 @@ void UPuzzlePlatformsGameInstance::Join(uint32 Index)
 
 void UPuzzlePlatformsGameInstance::OnJoinSessionComplete(FName SessionName, EOnJoinSessionCompleteResult::Type Result)
 {
+	UE_LOG(LogTemp, Warning, TEXT("GInstance:OnJoinComplete invoked"));
 	if (!SessionInterface.IsValid()) return;
 
 	FString Address;
@@ -226,6 +243,7 @@ void UPuzzlePlatformsGameInstance::OnJoinSessionComplete(FName SessionName, EOnJ
 
 void UPuzzlePlatformsGameInstance::StartSession()
 {
+	UE_LOG(LogTemp, Warning, TEXT("GInstance:StartSession invoked"));
 	if (SessionInterface.IsValid())
 	{
 		SessionInterface->StartSession(SESSION_NAME);
@@ -234,6 +252,7 @@ void UPuzzlePlatformsGameInstance::StartSession()
 
 void UPuzzlePlatformsGameInstance::LoadMainMenu()
 {
+	UE_LOG(LogTemp, Warning, TEXT("GInstance:LoadMainMenu invoked"));
 	APlayerController* PlayerController = GetFirstLocalPlayerController();
 	if (!ensure(PlayerController != nullptr)) return;
 	PlayerController->ClientTravel("/Game/MenuSystem/MainMenu", ETravelType::TRAVEL_Absolute);

@@ -74,7 +74,7 @@ void APlayerMallet::BeginPlay()
 		return;
 	}
 
-	GetWorldTimerManager().SetTimer(MalletInitDelayTimer, this, &APlayerMallet::DelayedBeginPlay, 0.50f);
+	GetWorldTimerManager().SetTimer(MalletInitDelayTimer, this, &APlayerMallet::DelayedBeginPlay, 1.5f);
 
 	
 
@@ -91,18 +91,6 @@ void APlayerMallet::InitMallet()
 
 	TArray<AActor*> spawnPoints;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ASpawnPoint::StaticClass(), spawnPoints);
-	
-
-	TArray<ASpawnPoint*> spawnPoints_Sorted;
-	for(int i=0; i<spawnPoints.Num(); i++)
-	{
-		for(AActor* actor:spawnPoints)
-		{
-			ASpawnPoint* sp=Cast<ASpawnPoint>(actor);
-			if(sp->Team==i)
-				spawnPoints_Sorted.Add(sp);
-		}
-	}
 
 	AGameStateBase* gamestate=GetWorld()->GetGameState();
 	if(gamestate!=nullptr)
@@ -116,14 +104,16 @@ void APlayerMallet::InitMallet()
 				APlayerMallet* mallet=Cast<APlayerMallet>(pState->GetPawn());
 				if(mallet==nullptr) return;
 				if(mallet->StaticMesh==nullptr) return;
-				int team_value=pState->CurrentTeam;
-				
-				switch(team_value)
+				int team=pState->CurrentTeam;
+				UE_LOG(LogTemp, Warning, TEXT("Team=%d"),team);
+				switch(team)
 				{
 					case 0:
+						UE_LOG(LogTemp, Warning, TEXT("Set team colour to Red"));
 						mallet->StaticMesh->SetMaterial(0, RedTeamMaterial);
 						break;
 					case 1:
+						UE_LOG(LogTemp, Warning, TEXT("Set team colour to Blue"));
 						mallet->StaticMesh->SetMaterial(0, BlueTeamMaterial);
 						break;
 					default:
@@ -132,7 +122,7 @@ void APlayerMallet::InitMallet()
 
 				if(GetWorld()->IsServer())
 				{
-					if(spawnPoints_Sorted.Num()!=0) mallet->SetActorLocation(spawnPoints_Sorted[team_value]->GetActorLocation());
+					if(spawnPoints.Num()!=0) mallet->SetActorLocation(spawnPoints[i]->GetActorLocation());
 				}
 					
 			}

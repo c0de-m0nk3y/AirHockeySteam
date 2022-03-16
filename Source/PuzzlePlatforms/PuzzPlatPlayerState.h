@@ -19,7 +19,7 @@ class PUZZLEPLATFORMS_API APuzzPlatPlayerState : public APlayerState
 public:
 
 	UPROPERTY(replicated)
-		int CurrentTeam = 3;
+		int CurrentTeam = 222;
 
 protected:
 	void GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const override;
